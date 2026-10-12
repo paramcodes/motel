@@ -11,16 +11,16 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'rounded-[20px] bg-canvas border border-hairline/60 shadow-airbnb-rest transition-all duration-300',
+          'rounded-[20px] bg-canvas border border-hairline/60 shadow-airbnb-rest transition-[box-shadow,transform] duration-200 ease-out',
           hoverEffect && 'hover:shadow-airbnb-hover hover:-translate-y-0.5',
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </div>
     );
-  }
+  },
 );
 
 Card.displayName = 'Card';

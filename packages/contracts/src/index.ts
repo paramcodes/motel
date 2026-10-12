@@ -83,17 +83,13 @@ export const CANONICAL_AMENITIES = [
 export type Amenity = (typeof CANONICAL_AMENITIES)[number];
 
 export const step4AmenitiesSchema = z.object({
-  amenities: z
-    .array(z.string())
-    .min(1, 'Select at least one amenity for your listing'),
+  amenities: z.array(z.string()).min(1, 'Select at least one amenity for your listing'),
 });
 
 export type Step4AmenitiesInput = z.infer<typeof step4AmenitiesSchema>;
 
 export const step5PhotosSchema = z.object({
-  imageSrc: z
-    .string()
-    .url('Primary photo must be a valid URL'),
+  imageSrc: z.string().url('Primary photo must be a valid URL'),
   images: z
     .array(z.string().url('Photo must be a valid URL'))
     .min(1, 'Upload at least 1 photo for your listing'),

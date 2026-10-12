@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import {
   createListingSchema,
   createReservationInputSchema,
@@ -59,7 +59,9 @@ describe('Shared Contracts & Validation Package', () => {
   });
 
   it('should detect PostgreSQL GiST exclusion violations', () => {
-    const error1 = new Error('conflicting key value violates exclusion constraint "reservation_no_overlapping_confirmed"');
+    const error1 = new Error(
+      'conflicting key value violates exclusion constraint "reservation_no_overlapping_confirmed"',
+    );
     expect(isReservationExclusionViolation(error1)).toBe(true);
 
     const error2 = { code: '23P01' };

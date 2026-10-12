@@ -1,8 +1,8 @@
 'use client';
 
-import * as React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
+import * as React from 'react';
 import { trpc } from '../lib/trpc';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -15,11 +15,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             refetchOnWindowFocus: false,
           },
         },
-      })
+      }),
   );
 
   const [trpcClient] = React.useState(() =>
-    trpc.createClient({
+    (trpc.createClient as any)({
       links: [
         httpBatchLink({
           url: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/trpc',
@@ -34,7 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           },
         }),
       ],
-    })
+    }),
   );
 
   return (

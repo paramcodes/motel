@@ -1,10 +1,10 @@
-import { router, protectedProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
 import {
-  createReservationInputSchema,
   cancelReservationInputSchema,
+  createReservationInputSchema,
   isReservationExclusionViolation,
 } from '@motel/contracts';
+import { TRPCError } from '@trpc/server';
+import { protectedProcedure, router } from '../trpc';
 
 export const reservationsRouter = router({
   create: protectedProcedure

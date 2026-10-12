@@ -1,7 +1,7 @@
 import { router } from '../trpc';
+import { favoritesRouter } from './favorites';
 import { listingsRouter } from './listings';
 import { reservationsRouter } from './reservations';
-import { favoritesRouter } from './favorites';
 
 export const appRouter = router({
   listings: listingsRouter,

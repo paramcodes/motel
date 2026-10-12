@@ -1,5 +1,5 @@
+import { db, type User } from '@motel/db';
 import { initTRPC, TRPCError } from '@trpc/server';
-import { db, User } from '@motel/db';
 
 export interface AuthContext {
   userId: string | null;
@@ -17,7 +17,7 @@ export async function createContext({ req }: { req: Request }): Promise<Context>
   let userId: string | null = null;
   let user: User | null = null;
 
-  if (authHeader && authHeader.startsWith('Bearer ')) {
+  if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.replace('Bearer ', '').trim();
     // In production with CLERK_JWT_KEY, verify RS256 token claims
     // For local dev / test mock tokens: format "user_xxx" or "test_xxx"

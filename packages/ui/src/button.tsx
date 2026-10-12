@@ -9,10 +9,13 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', children, ...props }, ref) => {
     const variantStyles = {
-      primary: 'bg-rausch hover:bg-deep-rausch text-canvas font-semibold shadow-sm active:scale-[0.98]',
-      secondary: 'bg-ink hover:bg-black text-canvas font-semibold shadow-sm active:scale-[0.98]',
-      outline: 'border border-hairline hover:border-ink bg-canvas text-ink font-semibold shadow-sm',
-      ghost: 'hover:bg-surface-soft text-ink font-medium',
+      primary:
+        'bg-rausch hover:bg-deep-rausch text-canvas font-semibold shadow-sm active:scale-[0.97] active:duration-75',
+      secondary:
+        'bg-ink hover:bg-black text-canvas font-semibold shadow-sm active:scale-[0.97] active:duration-75',
+      outline:
+        'border border-hairline hover:border-ink bg-canvas text-ink font-semibold shadow-sm active:scale-[0.97] active:duration-75',
+      ghost: 'hover:bg-surface-soft text-ink font-medium active:scale-[0.97] active:duration-75',
     };
 
     const sizeStyles = {
@@ -26,17 +29,17 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          'inline-flex items-center justify-center transition-all select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-50 disabled:pointer-events-none',
+          'inline-flex items-center justify-center transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-out select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ink disabled:opacity-50 disabled:pointer-events-none',
           variantStyles[variant],
           sizeStyles[size],
-          className
+          className,
         )}
         {...props}
       >
         {children}
       </button>
     );
-  }
+  },
 );
 
 Button.displayName = 'Button';

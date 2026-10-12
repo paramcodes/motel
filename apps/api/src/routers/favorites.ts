@@ -1,8 +1,5 @@
-import { router, protectedProcedure } from '../trpc';
-import {
-  toggleFavoriteInputSchema,
-  toggleFavoriteOutputSchema,
-} from '@motel/contracts';
+import { toggleFavoriteInputSchema, toggleFavoriteOutputSchema } from '@motel/contracts';
+import { protectedProcedure, router } from '../trpc';
 
 export const favoritesRouter = router({
   toggle: protectedProcedure
@@ -33,7 +30,7 @@ export const favoritesRouter = router({
     const client = await ctx.db.getClient();
     const res = await client.query<{ listingId: string }>(
       'SELECT "listingId" FROM "Favorite" WHERE "userId" = $1',
-      [ctx.auth.user.id]
+      [ctx.auth.user.id],
     );
     return res.rows.map((r) => r.listingId);
   }),

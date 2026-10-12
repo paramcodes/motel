@@ -1,8 +1,8 @@
-import * as React from 'react';
 import type { Metadata } from 'next';
-import { Providers } from '../components/providers';
-import { NavigationHeader } from '../components/header';
+import * as React from 'react';
 import { CategoryBar } from '../components/category-bar';
+import { NavigationHeader } from '../components/header';
+import { Providers } from '../components/providers';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -10,11 +10,7 @@ export const metadata: Metadata = {
   description: 'Find the perfect place to stay at an amazing price.',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen bg-canvas text-ink antialiased">
@@ -23,9 +19,7 @@ export default function RootLayout({
             <NavigationHeader />
             <CategoryBar />
           </React.Suspense>
-          <React.Suspense fallback={null}>
-            {children}
-          </React.Suspense>
+          <React.Suspense fallback={null}>{children}</React.Suspense>
         </Providers>
       </body>
     </html>

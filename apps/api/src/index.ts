@@ -1,9 +1,9 @@
-import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
+import { db } from '@motel/db';
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { Elysia } from 'elysia';
 import { appRouter } from './routers';
 import { createContext } from './trpc';
-import { db } from '@motel/db';
 
 const port = Number(process.env.PORT || 3001);
 
@@ -13,7 +13,7 @@ export const app = new Elysia()
       origin: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization', 'x-clerk-user-id'],
-    })
+    }),
   )
   .get('/health', () => ({
     status: 'ok',
@@ -24,9 +24,9 @@ export const app = new Elysia()
   .post(
     '/webhooks/clerk',
     async ({ request, set }) => {
-      const svixId = request.headers.get('svix-id');
-      const svixTimestamp = request.headers.get('svix-timestamp');
-      const svixSignature = request.headers.get('svix-signature');
+      const _svixId = request.headers.get('svix-id');
+      const _svixTimestamp = request.headers.get('svix-timestamp');
+      const _svixSignature = request.headers.get('svix-signature');
 
       // Verify webhook payload or handle local sync
       const body = (await request.json()) as {
@@ -58,7 +58,7 @@ export const app = new Elysia()
       set.status = 200;
       return { received: true };
     },
-    { parse: 'none' }
+    { parse: 'none' },
   )
   // Mount tRPC Fetch Request Handler
   .all(
@@ -76,7 +76,7 @@ export const app = new Elysia()
         },
       });
     },
-    { parse: 'none' }
+    { parse: 'none' },
   );
 
 if (import.meta.main) {

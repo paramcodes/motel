@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false
+  },
   "include": ["packages/**/*", "apps/**/*"],
   "exclude": ["node_modules", "dist", ".next"]
 }

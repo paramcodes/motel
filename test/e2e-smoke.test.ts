@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import { app } from '../apps/api/src/index';
 import { db } from '../packages/db/src/index';
 
@@ -11,20 +11,40 @@ describe('Motel End-to-End Concurrency & Verification Suite', () => {
   });
 
   it('should search listings by category', async () => {
-    const url = 'http://localhost:3001/trpc/listings.search?batch=1&input=%7B%220%22%3A%7B%22category%22%3A%22Beachfront%22%7D%7D';
+    const url =
+      'http://localhost:3001/trpc/listings.search?batch=1&input=%7B%220%22%3A%7B%22category%22%3A%22Beachfront%22%7D%7D';
     const res = await app.handle(new Request(url));
     expect(res.status).toBe(200);
-    const data = (await res.json()) as Array<{ result: { data: { items: Array<{ category: string }> } } }>;
+    const data = (await res.json()) as Array<{
+      result: { data: { items: Array<{ category: string }> } };
+    }>;
     expect(data[0].result.data.items.length).toBeGreaterThan(0);
     expect(data[0].result.data.items[0].category).toBe('Beachfront');
   });
 
   it('should handle parallel concurrent reservation requests with GiST exclusion conflict', async () => {
-    const listings = await db.listing.findMany({ limit: 1 });
+    const host = await db.user.findUnique({ where: { clerkId: 'user_host_demo_01' } });
+    if (!host) throw new Error('Demo host not found');
+    const testListing = await db.listing.create({
+      data: {
+        hostId: host.id,
+        title: `Concurrency Isolation Test ${Date.now()}`,
+        description: 'Testing GiST exclusion constraint under high concurrency',
+        category: 'Beachfront',
+        country: 'United States',
+        guestCount: 4,
+        roomCount: 2,
+        bathroomCount: 2,
+        imageSrc: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750',
+        images: [],
+        amenities: ['wifi'],
+        price: 250,
+      },
+    });
+    const listingId = testListing.id;
     const randomYear = 2030 + Math.floor(Math.random() * 500);
     const startDate = `${randomYear}-09-10`;
     const endDate = `${randomYear}-09-15`;
-    const listingId = listings[0].id;
     const makeBookingRequest = (guestId: string) => {
       const url = 'http://localhost:3001/trpc/reservations.create?batch=1';
       return app.handle(
@@ -42,7 +62,7 @@ describe('Motel End-to-End Concurrency & Verification Suite', () => {
               totalPrice: 1500,
             },
           }),
-        })
+        }),
       );
     };
 

@@ -1,21 +1,22 @@
 'use client';
 
-import * as React from 'react';
-import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
-import { trpc } from '../../../lib/trpc';
 import { Button } from '@motel/ui';
+import { AnimatePresence, motion } from 'framer-motion';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import * as React from 'react';
+import { trpc } from '../../../lib/trpc';
 export const dynamic = 'force-dynamic';
 
 export default function ListingDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = typeof params.id === 'string' ? params.id : '';
 
-  const { data: listing, isLoading, error } = trpc.listings.byId.useQuery(
-    { id },
-    { enabled: Boolean(id) }
-  );
+  const {
+    data: listing,
+    isLoading,
+    error,
+  } = trpc.listings.byId.useQuery({ id }, { enabled: Boolean(id) });
 
   const [checkIn, setCheckIn] = React.useState('2026-11-12');
   const [checkOut, setCheckOut] = React.useState('2026-11-16');
@@ -33,14 +34,14 @@ export default function ListingDetailPage() {
 
   const createReservation = trpc.reservations.create.useMutation({
     onSuccess: () => {
-      setConflictError(null);
       setBookingSuccess(true);
+      setConflictError(null);
     },
-    onError: (err) => {
-      if (err.data?.code === 'CONFLICT' || err.message.includes('dates are no longer available')) {
-        setConflictError('These dates are no longer available. Another guest has reserved them.');
+    onError: (err: any) => {
+      if (err.data?.code === 'CONFLICT') {
+        setConflictError('These dates are already booked. Please choose another date range.');
       } else {
-        setConflictError(err.message);
+        setConflictError(err.message || 'Failed to complete reservation. Please try again.');
       }
     },
   });
@@ -57,11 +58,11 @@ export default function ListingDetailPage() {
 
   if (isLoading) {
     return (
-      <main className="max-w-6xl mx-auto px-6 py-10 animate-pulse">
-        <div className="h-8 w-1/2 bg-neutral-200 rounded mb-4" />
-        <div className="aspect-[16/9] w-full bg-neutral-200 rounded-[20px] mb-8" />
-        <div className="h-6 w-1/4 bg-neutral-200 rounded mb-2" />
-        <div className="h-20 w-3/4 bg-neutral-200 rounded" />
+      <main className="max-w-6xl mx-auto px-6 py-10 space-y-6">
+        <div className="h-8 w-1/2 rounded-lg skeleton-shimmer" />
+        <div className="aspect-[16/9] w-full rounded-[20px] skeleton-shimmer" />
+        <div className="h-6 w-1/4 rounded-md skeleton-shimmer" />
+        <div className="h-20 w-3/4 rounded-xl skeleton-shimmer" />
       </main>
     );
   }
@@ -86,18 +87,20 @@ export default function ListingDetailPage() {
         <div className="flex items-center gap-2 mt-2 text-sm text-secondary">
           <span className="font-semibold text-ink">★ 4.98</span>
           <span>·</span>
-          <span className="underline">{listing.city ? `${listing.city}, ${listing.country}` : listing.country}</span>
+          <span className="underline">
+            {listing.city ? `${listing.city}, ${listing.country}` : listing.country}
+          </span>
           <span>·</span>
           <span className="capitalize">{listing.category}</span>
         </div>
       </div>
 
       {/* Hero Image Mosaic */}
-      <div className="relative aspect-[16/9] w-full rounded-[20px] overflow-hidden bg-neutral-100 shadow-airbnb-rest mb-10">
+      <div className="relative aspect-[16/9] w-full rounded-[20px] overflow-hidden bg-neutral-100 shadow-airbnb-rest mb-10 group">
         <img
           src={listing.imageSrc}
           alt={listing.title}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
       </div>
 
@@ -110,7 +113,8 @@ export default function ListingDetailPage() {
               Entire space hosted in {listing.city || listing.country}
             </h2>
             <p className="text-secondary text-sm mt-1">
-              {listing.guestCount} guests · {listing.roomCount} bedrooms · {listing.bathroomCount} baths
+              {listing.guestCount} guests · {listing.roomCount} bedrooms · {listing.bathroomCount}{' '}
+              baths
             </p>
           </div>
 
@@ -142,9 +146,7 @@ export default function ListingDetailPage() {
                 <span className="text-2xl font-bold text-ink">${listing.price}</span>
                 <span className="text-secondary text-sm"> / night</span>
               </div>
-              <div className="text-xs font-semibold text-ink">
-                ★ 4.98 · 142 reviews
-              </div>
+              <div className="text-xs font-semibold text-ink">★ 4.98 · 142 reviews</div>
             </div>
 
             {/* Date Pickers */}
@@ -175,23 +177,40 @@ export default function ListingDetailPage() {
               </div>
             </div>
 
-            {/* Concurrency Error Banner */}
-            {conflictError && (
-              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 font-medium">
-                ⚠️ {conflictError}
-              </div>
-            )}
+            {/* Concurrency Error Banner & Success Banner with layout-friendly AnimatePresence */}
+            <AnimatePresence>
+              {conflictError && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-700 font-medium">
+                    ⚠️ {conflictError}
+                  </div>
+                </motion.div>
+              )}
 
-            {/* Success Banner */}
-            {bookingSuccess && (
-              <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 font-medium">
-                🎉 Reservation confirmed! View your stay under{' '}
-                <Link href="/trips" className="underline font-bold">
-                  My Trips
-                </Link>
-                .
-              </div>
-            )}
+              {bookingSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 font-medium">
+                    🎉 Reservation confirmed! View your stay under{' '}
+                    <Link href="/trips" className="underline font-bold">
+                      My Trips
+                    </Link>
+                    .
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Reserve CTA */}
             <Button
@@ -208,7 +227,9 @@ export default function ListingDetailPage() {
             {/* Price Calculation Breakdown */}
             <div className="mt-6 space-y-3 border-t border-hairline-soft pt-4 text-sm">
               <div className="flex justify-between text-body-ink">
-                <span className="underline">${listing.price} × {nights} nights</span>
+                <span className="underline">
+                  ${listing.price} × {nights} nights
+                </span>
                 <span>${totalPrice}</span>
               </div>
               <div className="flex justify-between text-body-ink">
@@ -221,7 +242,20 @@ export default function ListingDetailPage() {
               </div>
               <div className="flex justify-between font-bold text-ink border-t border-hairline-soft pt-3 text-base">
                 <span>Total before taxes</span>
-                <span>${totalPrice}</span>
+                <div className="relative overflow-hidden h-6">
+                  <AnimatePresence mode="popLayout">
+                    <motion.span
+                      key={totalPrice}
+                      initial={{ y: 8, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -8, opacity: 0 }}
+                      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                      className="block font-bold"
+                    >
+                      ${totalPrice}
+                    </motion.span>
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { PGlite } from '@electric-sql/pglite';
 import { btree_gist } from '@electric-sql/pglite/contrib/btree_gist';
-import { readFileSync, existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
 
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 
@@ -153,7 +153,7 @@ export class DatabaseClient {
         `);
         params.push(
           options.where.checkOut.toISOString().split('T')[0],
-          options.where.checkIn.toISOString().split('T')[0]
+          options.where.checkIn.toISOString().split('T')[0],
         );
       }
       if (options?.cursor) {
@@ -177,14 +177,15 @@ export class DatabaseClient {
 
     findUnique: async (options: { where: { id: string } }): Promise<Listing | null> => {
       const client = await this.getClient();
-      const res = await client.query<Listing>(
-        'SELECT * FROM "Listing" WHERE id = $1 LIMIT 1',
-        [options.where.id]
-      );
+      const res = await client.query<Listing>('SELECT * FROM "Listing" WHERE id = $1 LIMIT 1', [
+        options.where.id,
+      ]);
       return res.rows[0] ?? null;
     },
 
-    create: async (options: { data: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'> }): Promise<Listing> => {
+    create: async (options: {
+      data: Omit<Listing, 'id' | 'createdAt' | 'updatedAt'>;
+    }): Promise<Listing> => {
       const client = await this.getClient();
       const id = `list_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
       const {
@@ -234,7 +235,7 @@ export class DatabaseClient {
           images,
           amenities,
           price,
-        ]
+        ],
       );
       return res.rows[0];
     },
@@ -248,7 +249,9 @@ export class DatabaseClient {
 
   // Reservation Operations
   public readonly reservation = {
-    findMany: async (options?: { where?: { userId?: string; listingId?: string } }): Promise<Reservation[]> => {
+    findMany: async (options?: {
+      where?: { userId?: string; listingId?: string };
+    }): Promise<Reservation[]> => {
       const client = await this.getClient();
       const conditions: string[] = [];
       const params: unknown[] = [];
@@ -266,7 +269,7 @@ export class DatabaseClient {
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
       const res = await client.query<Reservation>(
         `SELECT * FROM "Reservation" ${whereClause} ORDER BY "createdAt" DESC`,
-        params
+        params,
       );
       return res.rows;
     },
@@ -275,7 +278,7 @@ export class DatabaseClient {
       const client = await this.getClient();
       const res = await client.query<Reservation>(
         'SELECT * FROM "Reservation" WHERE id = $1 LIMIT 1',
-        [options.where.id]
+        [options.where.id],
       );
       return res.rows[0] ?? null;
     },
@@ -292,7 +295,14 @@ export class DatabaseClient {
     }): Promise<Reservation> => {
       const client = await this.getClient();
       const id = `res_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
-      const { userId, listingId, startDate, endDate, totalPrice, status = 'CONFIRMED' } = options.data;
+      const {
+        userId,
+        listingId,
+        startDate,
+        endDate,
+        totalPrice,
+        status = 'CONFIRMED',
+      } = options.data;
 
       const res = await client.query<Reservation>(
         `INSERT INTO "Reservation" (
@@ -308,7 +318,7 @@ export class DatabaseClient {
           endDate.toISOString().split('T')[0],
           totalPrice,
           status,
-        ]
+        ],
       );
       return res.rows[0];
     },
@@ -320,7 +330,7 @@ export class DatabaseClient {
       const client = await this.getClient();
       const res = await client.query<Reservation>(
         'UPDATE "Reservation" SET status = $1, "updatedAt" = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
-        [options.data.status, options.where.id]
+        [options.data.status, options.where.id],
       );
       return res.rows[0];
     },
@@ -328,18 +338,26 @@ export class DatabaseClient {
 
   // User Operations
   public readonly user = {
-    findUnique: async (options: { where: { id?: string; clerkId?: string; email?: string } }): Promise<User | null> => {
+    findUnique: async (options: {
+      where: { id?: string; clerkId?: string; email?: string };
+    }): Promise<User | null> => {
       const client = await this.getClient();
       if (options.where.id) {
-        const res = await client.query<User>('SELECT * FROM "User" WHERE id = $1 LIMIT 1', [options.where.id]);
+        const res = await client.query<User>('SELECT * FROM "User" WHERE id = $1 LIMIT 1', [
+          options.where.id,
+        ]);
         return res.rows[0] ?? null;
       }
       if (options.where.clerkId) {
-        const res = await client.query<User>('SELECT * FROM "User" WHERE "clerkId" = $1 LIMIT 1', [options.where.clerkId]);
+        const res = await client.query<User>('SELECT * FROM "User" WHERE "clerkId" = $1 LIMIT 1', [
+          options.where.clerkId,
+        ]);
         return res.rows[0] ?? null;
       }
       if (options.where.email) {
-        const res = await client.query<User>('SELECT * FROM "User" WHERE email = $1 LIMIT 1', [options.where.email]);
+        const res = await client.query<User>('SELECT * FROM "User" WHERE email = $1 LIMIT 1', [
+          options.where.email,
+        ]);
         return res.rows[0] ?? null;
       }
       return null;
@@ -360,7 +378,12 @@ export class DatabaseClient {
             "imageUrl" = COALESCE($3, "imageUrl"),
             "updatedAt" = CURRENT_TIMESTAMP
           WHERE "clerkId" = $4 RETURNING *`,
-          [options.update.email || null, options.update.name || null, options.update.imageUrl || null, options.where.clerkId]
+          [
+            options.update.email || null,
+            options.update.name || null,
+            options.update.imageUrl || null,
+            options.where.clerkId,
+          ],
         );
         return res.rows[0];
       }
@@ -368,7 +391,13 @@ export class DatabaseClient {
       const res = await client.query<User>(
         `INSERT INTO "User" (id, "clerkId", email, name, "imageUrl")
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [id, options.create.clerkId, options.create.email, options.create.name || null, options.create.imageUrl || null]
+        [
+          id,
+          options.create.clerkId,
+          options.create.email,
+          options.create.name || null,
+          options.create.imageUrl || null,
+        ],
       );
       return res.rows[0];
     },
@@ -387,7 +416,7 @@ export class DatabaseClient {
       const client = await this.getClient();
       const res = await client.query<Favorite>(
         'SELECT * FROM "Favorite" WHERE "userId" = $1 AND "listingId" = $2 LIMIT 1',
-        [options.where.userId_listingId.userId, options.where.userId_listingId.listingId]
+        [options.where.userId_listingId.userId, options.where.userId_listingId.listingId],
       );
       return res.rows[0] ?? null;
     },
@@ -397,7 +426,7 @@ export class DatabaseClient {
       const id = `fav_${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
       const res = await client.query<Favorite>(
         'INSERT INTO "Favorite" (id, "userId", "listingId") VALUES ($1, $2, $3) RETURNING *',
-        [id, options.data.userId, options.data.listingId]
+        [id, options.data.userId, options.data.listingId],
       );
       return res.rows[0];
     },
@@ -406,10 +435,10 @@ export class DatabaseClient {
       where: { userId_listingId: { userId: string; listingId: string } };
     }): Promise<void> => {
       const client = await this.getClient();
-      await client.query(
-        'DELETE FROM "Favorite" WHERE "userId" = $1 AND "listingId" = $2',
-        [options.where.userId_listingId.userId, options.where.userId_listingId.listingId]
-      );
+      await client.query('DELETE FROM "Favorite" WHERE "userId" = $1 AND "listingId" = $2', [
+        options.where.userId_listingId.userId,
+        options.where.userId_listingId.listingId,
+      ]);
     },
   };
 }

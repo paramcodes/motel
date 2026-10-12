@@ -24,6 +24,7 @@ Standing preferences:
 - [Research Prisma PostgreSQL Schema and Reservation Availability Constraints](.scratch/airbnb-clone/issues/03-prisma-postgres-reservation-constraints.md): Solved reservation double-booking race conditions using PostgreSQL GiST exclusion constraints with `btree_gist` and availability filtering via indexed `NOT EXISTS` anti-semi-joins in Prisma.
 - [Prototype Airbnb Category Bar and Floating Search Bar Navigation Header](.scratch/airbnb-clone/issues/04-airbnb-category-and-search-header-prototype.md): Adopted synthesized winner combining Variant A's desktop inline expansion and Stays/Experiences tabs with Variant C's 3-segment stacked search pill (WHERE, DATES, GUESTS with crisp active border) and mobile Radix Dialog accordion modal (Variant B).
 - [Define Listing Creation Multi-Step Wizard State and Validation Contracts](.scratch/airbnb-clone/issues/05-listing-creation-wizard-contracts.md): Defined client-side atomic wizard state with sessionStorage persistence, modular Zod step schemas (Category, Location, Floor plan, Amenities, Photos, Description, Price) merged into createListingSchema, and ?step=1..7 shallow routing.
+- [Define Reservation Concurrency and Availability Filtering tRPC Router Contracts](.scratch/airbnb-clone/issues/06-reservation-concurrency-availability-contracts.md): Locked tRPC router signatures (listings.search cursor pagination with NOT EXISTS availability filter, reservations.create with PostgreSQL GiST exclusion conflict mapping to CONFLICT, soft cancel, and atomic favorites toggle).
 
 ## Not yet specified
 

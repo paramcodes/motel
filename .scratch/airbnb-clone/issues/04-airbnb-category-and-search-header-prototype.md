@@ -2,6 +2,7 @@
 
 Type: prototype
 Status: open
+Assignee: omp
 Blocked by: 01
 
 ## Question

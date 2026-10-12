@@ -2,6 +2,7 @@
 
 Type: task
 Status: open
+Assignee: omp
 Blocked by: 
 
 ## Question

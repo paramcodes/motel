@@ -31,3 +31,11 @@ _Avoid_: Type, tag, genre
 **Favorite**:
 A persisted user bookmark saving a listing to their personal wishlist.
 _Avoid_: Like, bookmark, starred
+
+**Amenity**:
+A distinctive feature or utility convenience provided by a listing space (e.g., Wifi, Pool, Kitchen, Dedicated workspace).
+_Avoid_: Feature, perk, tag, attribute
+
+**Draft**:
+An uncommitted listing state held strictly in client session storage prior to atomic creation.
+_Avoid_: Incomplete listing, pending listing, draft entity

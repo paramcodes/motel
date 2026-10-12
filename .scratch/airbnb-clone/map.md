@@ -23,6 +23,7 @@ Standing preferences:
 - [Research Bun Elysia tRPC Adapter and Clerk Authentication Bridge](.scratch/airbnb-clone/issues/02-elysia-trpc-clerk-auth-bridge.md): Decoupled Elysia mounting via native `fetchRequestHandler` with `{ parse: 'none' }`, RS256 token verification with `@clerk/backend` `authenticateRequest`, and Svix-verified webhook user syncing into PostgreSQL.
 - [Research Prisma PostgreSQL Schema and Reservation Availability Constraints](.scratch/airbnb-clone/issues/03-prisma-postgres-reservation-constraints.md): Solved reservation double-booking race conditions using PostgreSQL GiST exclusion constraints with `btree_gist` and availability filtering via indexed `NOT EXISTS` anti-semi-joins in Prisma.
 - [Prototype Airbnb Category Bar and Floating Search Bar Navigation Header](.scratch/airbnb-clone/issues/04-airbnb-category-and-search-header-prototype.md): Adopted synthesized winner combining Variant A's desktop inline expansion and Stays/Experiences tabs with Variant C's 3-segment stacked search pill (WHERE, DATES, GUESTS with crisp active border) and mobile Radix Dialog accordion modal (Variant B).
+- [Define Listing Creation Multi-Step Wizard State and Validation Contracts](.scratch/airbnb-clone/issues/05-listing-creation-wizard-contracts.md): Defined client-side atomic wizard state with sessionStorage persistence, modular Zod step schemas (Category, Location, Floor plan, Amenities, Photos, Description, Price) merged into createListingSchema, and ?step=1..7 shallow routing.
 
 ## Not yet specified
 

@@ -1,0 +1,21 @@
+{
+  "name": "@motel/api",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@motel/contracts": "workspace:*",
+    "@motel/db": "workspace:*",
+    "elysia": "^1.2.25",
+    "@elysiajs/cors": "^1.2.0",
+    "@trpc/server": "^10.45.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,117 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+/// Synced with Clerk authentication via webhook
+model User {
+  id           String        @id @default(cuid())
+  clerkId      String        @unique
+  email        String        @unique
+  name         String?
+  imageUrl     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relationships
+  listings     Listing[]     @relation("HostListings")
+  reservations Reservation[] @relation("GuestReservations")
+  favorites    Favorite[]    @relation("UserFavorites")
+
+  @@index([email])
+}
+
+/// A published property space offered by a host
+model Listing {
+  id            String        @id @default(cuid())
+  hostId        String
+  host          User          @relation("HostListings", fields: [hostId], references: [id], onDelete: Cascade)
+
+  // 7-Step Host Wizard Attributes
+  title         String
+  description   String        @db.Text
+  category      String        // e.g. 'Beachfront', 'Cabins', 'Iconic cities' (see GLOSSARY)
+  
+  // Location
+  country       String        // Country name or ISO country code
+  region        String?       // State, province, or region
+  city          String?
+  address       String?
+  latitude      Float?
+  longitude     Float?
+
+  // Floor plan & capacity
+  guestCount    Int
+  roomCount     Int
+  bathroomCount Int
+
+  // Media & Amenities
+  imageSrc      String        // Primary cover photo URL
+  images        String[]      // Photo gallery URLs (native PostgreSQL array)
+  amenities     String[]      // Amenities list (native PostgreSQL array)
+
+  // Pricing
+  price         Int           // Nightly price in whole currency units (e.g. USD)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relationships
+  reservations  Reservation[]
+  favorites     Favorite[]
+
+  // Performance Indexes
+  @@index([category])
+  @@index([country])
+  @@index([hostId])
+  @@index([price])
+  @@index([createdAt])
+}
+
+/// An atomic, confirmed booking spanning a check-in to check-out date
+model Reservation {
+  id         String            @id @default(cuid())
+  userId     String            // Guest ID
+  user       User              @relation("GuestReservations", fields: [userId], references: [id], onDelete: Cascade)
+  listingId  String
+  listing    Listing           @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  startDate  DateTime          @db.Date
+  endDate    DateTime          @db.Date
+  totalPrice Int
+  status     ReservationStatus @default(CONFIRMED)
+
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  // Indexes
+  // Note: GiST exclusion constraint is applied via raw SQL migration
+  @@index([listingId, status, startDate, endDate])
+  @@index([userId])
+  @@index([startDate, endDate])
+}
+
+/// A persisted user bookmark saving a listing to their personal wishlist
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserFavorites", fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  // A guest can favorite a listing at most once
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@index([listingId])
+}

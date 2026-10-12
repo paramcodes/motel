@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@motel/contracts": ["packages/contracts/src/index.ts"],
+      "@motel/db": ["packages/db/src/index.ts"],
+      "@motel/ui": ["packages/ui/src/index.ts"],
+      "@motel/ui/*": ["packages/ui/src/*"]
+    }
+  }
+}

@@ -1,2 +1,5 @@
 .scratch/worktrees/
+.scratch/db/
 node_modules/
+.next/
+dist/

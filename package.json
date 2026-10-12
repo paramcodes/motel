@@ -1,0 +1,22 @@
+{
+  "name": "motel-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun --filter \"*\" dev",
+    "build": "bun --filter \"*\" build",
+    "test": "bun --filter \"*\" test",
+    "lint": "bun --filter \"*\" lint",
+    "db:generate": "bun --filter @motel/db generate",
+    "db:migrate": "bun --filter @motel/db migrate",
+    "db:seed": "bun --filter @motel/db seed"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "typescript": "^5.7.3"
+  }
+}

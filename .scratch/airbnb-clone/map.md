@@ -22,6 +22,7 @@ Standing preferences:
 - [Research Airbnb Design System Token Integration with Tailwind and Radix](.scratch/airbnb-clone/issues/01-airbnb-design-tokens-tailwind-radix.md): Standardized on Airbnb DLS tokens (Canvas White `#ffffff`, Rausch Red `#ff385c`, Near Black `#222222`, 3-layer shadows, 20px card radius, Cereal VF typography) mapped to Tailwind variables and Radix primitives with WCAG AA compliance.
 - [Research Bun Elysia tRPC Adapter and Clerk Authentication Bridge](.scratch/airbnb-clone/issues/02-elysia-trpc-clerk-auth-bridge.md): Decoupled Elysia mounting via native `fetchRequestHandler` with `{ parse: 'none' }`, RS256 token verification with `@clerk/backend` `authenticateRequest`, and Svix-verified webhook user syncing into PostgreSQL.
 - [Research Prisma PostgreSQL Schema and Reservation Availability Constraints](.scratch/airbnb-clone/issues/03-prisma-postgres-reservation-constraints.md): Solved reservation double-booking race conditions using PostgreSQL GiST exclusion constraints with `btree_gist` and availability filtering via indexed `NOT EXISTS` anti-semi-joins in Prisma.
+- [Prototype Airbnb Category Bar and Floating Search Bar Navigation Header](.scratch/airbnb-clone/issues/04-airbnb-category-and-search-header-prototype.md): Adopted responsive hybrid pattern with desktop Framer Motion spring layout expansion (Variant A) and mobile Radix Dialog progressive accordion modal (Variant B) bound to URL search params.
 
 ## Not yet specified
 

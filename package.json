@@ -1,0 +1,10 @@
+{
+  "name": "motel-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prototype": "bun run server.ts",
+    "start": "bun run server.ts",
+    "dev": "bun run server.ts"
+  }
+}

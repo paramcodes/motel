@@ -384,7 +384,7 @@
       return (
         <header ref={headerRef} className="sticky top-0 z-40 bg-canvas transition-all duration-300">
           {/* Top Navbar */}
-          <div className={`px-6 md:px-12 border-b border-hairline-soft transition-all duration-300 ${isExpanded ? 'pb-4 pt-4' : 'h-20 flex items-center'}`}>
+          <div className={`px-6 md:px-12 border-b border-hairline-soft transition-all duration-300 ${isExpanded ? 'pb-5 pt-4' : 'h-20 flex items-center'}`}>
             <div className="flex items-center justify-between w-full">
               {/* Brand Logo */}
               <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(false)}>
@@ -394,28 +394,87 @@
                 <span className="text-xl font-bold tracking-tight text-rausch">motel</span>
               </div>
 
-              {/* Middle Section: Compact Pill vs Stays/Experiences Tab Switcher */}
+              {/* Middle Section: Collapsed 3-Segment Pill vs Stays/Experiences Tab Switcher */}
               {!isExpanded ? (
-                <div
-                  onClick={() => setIsExpanded(true)}
-                  className="flex items-center divide-x divide-hairline rounded-full border border-hairline py-2 pl-6 pr-2 shadow-airbnb-rest hover:shadow-airbnb-hover transition-all cursor-pointer select-none"
-                >
-                  <button className="text-sm font-semibold text-ink pr-4 focus:outline-none">
-                    {state.destination || 'Anywhere'}
-                  </button>
-                  <button className="text-sm font-semibold text-ink px-4 focus:outline-none">
-                    {state.checkIn ? `${state.checkIn} – ${state.checkOut || 'Dates'}` : 'Any week'}
-                  </button>
-                  <div className="flex items-center gap-3 pl-4">
-                    <span className="text-sm text-secondary font-medium">
-                      {totalGuests > 0 ? `${totalGuests} guests` : 'Add guests'}
-                    </span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rausch text-canvas">
-                      <svg className="h-3.5 w-3.5 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="3">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                      </svg>
+                <div className="flex items-center rounded-full border border-hairline bg-canvas p-1.5 shadow-airbnb-rest hover:shadow-airbnb-hover transition-all select-none">
+                  {/* Segment 1: WHERE */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('where');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'where' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Where
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[130px]">
+                      {state.destination || "I'm flexible"}
                     </div>
                   </div>
+
+                  <div className="h-6 w-px bg-hairline" />
+
+                  {/* Segment 2: DATES */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('dates');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'dates' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Dates
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[140px]">
+                      {state.checkIn ? `${state.checkIn} – ${state.checkOut || 'Nov 18'}` : 'Nov 14 – Nov 18'}
+                    </div>
+                  </div>
+
+                  <div className="h-6 w-px bg-hairline" />
+
+                  {/* Segment 3: GUESTS */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('who');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'who' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Guests
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[110px]">
+                      {totalGuests > 0 ? `${totalGuests} guests` : '7 guests'}
+                    </div>
+                  </div>
+
+                  {/* Search Orb */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(true);
+                      setActiveSegment('where');
+                    }}
+                    aria-label="Search"
+                    className="h-9 w-9 rounded-full bg-rausch hover:bg-deep-rausch text-canvas flex items-center justify-center shrink-0 shadow-md ml-1 transition active:scale-95"
+                  >
+                    <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                  </button>
                 </div>
               ) : (
                 <div className="flex items-center gap-6">
@@ -457,93 +516,99 @@
               </div>
             </div>
 
-            {/* Expanded 4-Segment Search Bar */}
+            {/* Expanded 3-Segment Search Bar (from Image #1 / Variant C) */}
             {isExpanded && (
               <div className="mt-4 flex justify-center">
-                <div className="relative flex w-full max-w-4xl items-center rounded-full border border-hairline bg-surface-soft shadow-airbnb-hover">
-                  {/* Where Segment */}
+                <div className="relative flex items-center rounded-full border border-hairline bg-canvas p-1.5 shadow-airbnb-hover hover:shadow-airbnb-expanded transition-all max-w-2xl w-full">
+                  {/* Segment 1: WHERE */}
                   <div
                     onClick={() => setActiveSegment('where')}
-                    className={`flex-1 cursor-pointer rounded-full px-8 py-3 transition ${
-                      activeSegment === 'where' ? 'bg-canvas shadow-airbnb-expanded' : 'hover:bg-neutral-200/50'
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'where'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
                     }`}
                   >
-                    <div className="text-xs font-bold text-ink">Where</div>
-                    <input
-                      type="text"
-                      placeholder="Search destinations"
-                      value={state.destination}
-                      onChange={(e) => setState((prev) => ({ ...prev, destination: e.target.value }))}
-                      className="w-full bg-transparent text-sm text-ink placeholder-secondary font-medium focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-8 w-px bg-hairline" />
-
-                  {/* Check In */}
-                  <div
-                    onClick={() => setActiveSegment('checkIn')}
-                    className={`flex-1 cursor-pointer rounded-full px-6 py-3 transition ${
-                      activeSegment === 'checkIn' ? 'bg-canvas shadow-airbnb-expanded' : 'hover:bg-neutral-200/50'
-                    }`}
-                  >
-                    <div className="text-xs font-bold text-ink">Check in</div>
-                    <div className="text-sm text-secondary font-medium">
-                      {state.checkIn || 'Add dates'}
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Where
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {state.destination || "I'm flexible"}
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-8 w-px bg-hairline" />
+                  {/* Divider 1 */}
+                  {activeSegment !== 'where' && activeSegment !== 'dates' && (
+                    <div className="h-6 w-px bg-hairline" />
+                  )}
 
-                  {/* Check Out */}
+                  {/* Segment 2: DATES */}
                   <div
-                    onClick={() => setActiveSegment('checkOut')}
-                    className={`flex-1 cursor-pointer rounded-full px-6 py-3 transition ${
-                      activeSegment === 'checkOut' ? 'bg-canvas shadow-airbnb-expanded' : 'hover:bg-neutral-200/50'
+                    onClick={() => setActiveSegment('dates')}
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'dates'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
                     }`}
                   >
-                    <div className="text-xs font-bold text-ink">Check out</div>
-                    <div className="text-sm text-secondary font-medium">
-                      {state.checkOut || 'Add dates'}
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Dates
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {state.checkIn ? `${state.checkIn} – ${state.checkOut || 'Nov 18'}` : 'Nov 14 – Nov 18'}
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="h-8 w-px bg-hairline" />
+                  {/* Divider 2 */}
+                  {activeSegment !== 'dates' && activeSegment !== 'who' && (
+                    <div className="h-6 w-px bg-hairline" />
+                  )}
 
-                  {/* Who Segment & Search CTA */}
+                  {/* Segment 3: GUESTS */}
                   <div
                     onClick={() => setActiveSegment('who')}
-                    className={`flex flex-1 items-center justify-between rounded-full pl-6 pr-3 py-2 transition ${
-                      activeSegment === 'who' ? 'bg-canvas shadow-airbnb-expanded' : 'hover:bg-neutral-200/50'
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'who'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
                     }`}
                   >
-                    <div>
-                      <div className="text-xs font-bold text-ink">Who</div>
-                      <div className="text-sm text-secondary font-medium">
-                        {totalGuests > 0 ? `${totalGuests} guests` : 'Add guests'}
-                      </div>
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Guests
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsExpanded(false);
-                      }}
-                      className="flex items-center gap-2 rounded-full bg-rausch px-5 py-3 text-sm font-semibold text-canvas shadow-md hover:bg-deep-rausch transition"
-                    >
-                      <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                      </svg>
-                      <span>Search</span>
-                    </button>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {totalGuests > 0 ? `${totalGuests} guests` : '7 guests'}
+                    </div>
                   </div>
+
+                  {/* Search Orb CTA */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(false);
+                    }}
+                    aria-label="Search"
+                    className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-rausch hover:bg-deep-rausch text-canvas flex items-center justify-center shrink-0 shadow-md ml-2 transition active:scale-95"
+                  >
+                    <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                  </button>
 
                   {/* Popover Dropdown Panels */}
                   {activeSegment === 'where' && (
                     <div className="absolute top-20 left-0 w-96 rounded-[32px] border border-hairline bg-canvas p-6 shadow-airbnb-dialog z-50">
-                      <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-4">
+                      <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-3">
+                        Destination
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search destinations"
+                        value={state.destination}
+                        onChange={(e) => setState((prev) => ({ ...prev, destination: e.target.value }))}
+                        className="w-full rounded-xl border border-hairline px-4 py-2.5 text-sm text-ink mb-4 focus:border-ink focus:outline-none"
+                      />
+                      <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-3">
                         Search by region
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -553,7 +618,7 @@
                             onClick={(e) => {
                               e.stopPropagation();
                               setState((prev) => ({ ...prev, destination: region.name }));
-                              setActiveSegment('checkIn');
+                              setActiveSegment('dates');
                             }}
                             className="cursor-pointer rounded-2xl border border-hairline p-3 hover:border-ink hover:bg-surface-soft transition"
                           >
@@ -565,7 +630,7 @@
                     </div>
                   )}
 
-                  {(activeSegment === 'checkIn' || activeSegment === 'checkOut') && (
+                  {activeSegment === 'dates' && (
                     <div className="absolute top-20 left-1/4 w-[480px] rounded-[32px] border border-hairline bg-canvas p-6 shadow-airbnb-dialog z-50">
                       <div className="flex items-center justify-between mb-4">
                         <span className="text-sm font-bold text-ink">Select Dates (November 2026)</span>
@@ -585,7 +650,6 @@
                                 e.stopPropagation();
                                 if (!state.checkIn || (state.checkIn && state.checkOut)) {
                                   setState((prev) => ({ ...prev, checkIn: `Nov ${day}`, checkOut: '' }));
-                                  setActiveSegment('checkOut');
                                 } else {
                                   setState((prev) => ({ ...prev, checkOut: `Nov ${day}` }));
                                   setActiveSegment('who');
@@ -1162,7 +1226,7 @@
     // MAIN ROOT PROTOTYPE APPLICATION
     function App() {
       const VARIANTS = [
-        { key: 'A', name: 'Canonical Inline Header Expansion' },
+        { key: 'A', name: 'Canonical Header with 3-Segment Stacked Pill (Winner)' },
         { key: 'B', name: 'Overlay Dialog Modal Flow' },
         { key: 'C', name: 'Detached Dock & Segment Popovers' },
       ];
@@ -1176,10 +1240,10 @@
       const [currentVariant, setCurrentVariant] = useState(getInitialVariant);
 
       const [searchState, setSearchState] = useState({
-        destination: '',
-        checkIn: '',
-        checkOut: '',
-        guests: { adults: 1, children: 0, infants: 0, pets: 0 },
+        destination: "I'm flexible",
+        checkIn: 'Nov 14',
+        checkOut: 'Nov 18',
+        guests: { adults: 4, children: 3, infants: 0, pets: 0 },
         category: 'Beachfront',
       });
 

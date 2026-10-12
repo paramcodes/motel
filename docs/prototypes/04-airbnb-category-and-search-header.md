@@ -118,20 +118,31 @@ The prototype implements a floating switcher mounted at the bottom center of the
 
 ---
 
-## 5. Architectural Recommendation & Decision
+## 5. Human Evaluation & Validated Winner Decision
 
-### Responsive Hybrid Architecture
+Following user evaluation of the prototype options, the design was locked on a **synthesized winner combining Variant A's layout and expansion with Variant C's 3-segment stacked search pill**:
 
-The production implementation in `apps/web` will adopt a **responsive hybrid pattern**:
+### Synthesized Winner Specifications (Variant A + C Pill)
 
-1. **Desktop Viewports ($\ge 768\text{px}$)**:
-   - Implement **Variant A** (Canonical Inline Header Expansion).
-   - Use Framer Motion layout transitions for the morphing search pill.
-   - Mount search popovers with Radix UI headless positioning (`@floating-ui/react` or Radix `Popover.Content`).
-   - Underline active category indicator with `layoutId="categoryUnderline"`.
-2. **Mobile & Tablet Viewports ($< 768\text{px}$)**:
-   - Implement **Variant B** (Radix `Dialog` Modal Flow).
-   - Compact full-width pill triggers full-screen step-by-step accordion sheet.
-   - Prevents virtual keyboard occlusion and small-screen horizontal clipping.
-3. **Shared State Store**:
-   - Centralize search state (`destination`, `checkIn`, `checkOut`, `guests`, `category`) in URL search params (e.g., `?category=beachfront&destination=Japan&checkIn=2026-11-12...`) synchronized via a custom hook `useSearchFilters()` so both desktop and mobile variants share identical reactivity without redundant state logic.
+1. **3-Segment Stacked Search Pill (Desktop $\ge 768\text{px}$)**:
+   - Replaces the 4-segment split (`Where`, `Check in`, `Check out`, `Who`) with a unified 3-segment stacked layout matching Image #1:
+     - **`WHERE`**: Uppercase 10px tracking label over destination summary (`I'm flexible` / input).
+     - **`DATES`**: Uppercase 10px tracking label over unified range summary (`Nov 14 – Nov 18` / `Add dates`).
+     - **`GUESTS`**: Uppercase 10px tracking label over aggregate count (`7 guests` / `Add guests`).
+   - **Active Segment Boundary**: When a segment is active or focused, it is rendered inside an enclosed crisp pill with `border-2 border-black bg-white px-6 py-2 shadow-sm rounded-full`.
+   - **Unselected Segments**: Subtle hairline separators (`h-6 w-px bg-hairline`) render between adjacent unselected segments.
+   - **Search Orb**: Circular 40px Rausch Red (`#ff385c`) button with white magnifying glass icon at the far right.
+2. **Header Expansion & Popovers**:
+   - Retains Variant A's top-row **Stays** / **Experiences** navigation tabs when expanded.
+   - Anchored Radix-positioned popover cards appear directly underneath the active segment:
+     - Under `WHERE`: Region tile grid ("I'm flexible", Europe, USA, Japan, Southeast Asia, Caribbean) + text search input.
+     - Under `DATES`: Interactive dual-month range calendar picker.
+     - Under `GUESTS`: Stepper controls (+/–) for Adults, Children, Infants, Pets.
+   - Ambient page backdrop dimming (`bg-black/25`) with click-outside dismissal.
+3. **Category Bar Integration**:
+   - Positioned directly below the header divider.
+   - Circular 32px scroll chevrons (`<` and `>`) dynamically displayed based on scroll position.
+   - 64px linear gradient edge masks preventing boundary icon clipping.
+   - Underline active indicator with Framer Motion `layoutId="categoryUnderline"`.
+4. **Mobile & Adaptive Viewports ($< 768\text{px}$)**:
+   - Retains Variant B (Radix `Dialog` Modal Flow) for small viewports to prevent layout collisions and mobile keyboard clipping.

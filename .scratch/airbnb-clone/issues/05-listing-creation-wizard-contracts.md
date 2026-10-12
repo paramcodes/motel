@@ -2,6 +2,7 @@
 
 Type: grilling
 Status: open
+Assignee: omp
 Blocked by: 01, 03
 
 ## Question

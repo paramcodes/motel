@@ -20,7 +20,8 @@
     "demo:record": "node scripts/record-demo.mjs",
     "demo:video": "ffmpeg -y -i docs/demo/.raw/*.webm -c:v libx264 -pix_fmt yuv420p -movflags +faststart docs/demo/demo.mp4",
     "demo:gif": "ffmpeg -y -i docs/demo/demo.mp4 -vf \"fps=12,scale=960:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5\" docs/demo/demo.gif",
-    "demo:highlight": "ffmpeg -y -i docs/demo/demo.mp4 -filter:v \"setpts=PTS/1.6,fps=12,scale=820:-2:flags=lanczos\" -an /tmp/motel-hl.mp4 && ffmpeg -y -i /tmp/motel-hl.mp4 -vf palettegen=max_colors=160 -update 1 /tmp/motel-hl.png && ffmpeg -y -i /tmp/motel-hl.mp4 -i /tmp/motel-hl.png -lavfi paletteuse=dither=sierra2_4a docs/demo/demo-highlight.gif"
+    "demo:highlight": "ffmpeg -y -i docs/demo/demo.mp4 -filter:v \"setpts=PTS/1.6,fps=12,scale=820:-2:flags=lanczos\" -an /tmp/motel-hl.mp4 && ffmpeg -y -i /tmp/motel-hl.mp4 -vf palettegen=max_colors=160 -update 1 /tmp/motel-hl.png && ffmpeg -y -i /tmp/motel-hl.mp4 -i /tmp/motel-hl.png -lavfi paletteuse=dither=sierra2_4a docs/demo/demo-highlight.gif",
+    "prototype": "bun run server.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

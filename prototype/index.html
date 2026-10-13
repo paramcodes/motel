@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motel UI Prototype: Navigation Header & Category Bar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            canvas: '#ffffff',
+            rausch: '#ff385c',
+            'deep-rausch': '#e00b41',
+            ink: '#222222',
+            'body-ink': '#3f3f3f',
+            secondary: '#6a6a6a',
+            fog: '#717171',
+            hairline: '#dddddd',
+            'hairline-soft': '#ebebeb',
+            'surface-soft': '#f7f7f7',
+            'surface-strong': '#f2f2f2',
+          },
+          boxShadow: {
+            'airbnb-rest': '0 0 0 1px rgba(0,0,0,0.02), 0 2px 6px 0 rgba(0,0,0,0.04), 0 4px 8px 0 rgba(0,0,0,0.10)',
+            'airbnb-hover': '0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px 0 rgba(0,0,0,0.08)',
+            'airbnb-expanded': '0 12px 28px 0 rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04)',
+            'airbnb-dialog': '0 16px 40px rgba(0,0,0,0.22)',
+          },
+          borderRadius: {
+            'card': '20px',
+            'pill': '32px',
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #222222;
+      background-color: #ffffff;
+      -webkit-font-smoothing: antialiased;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .gradient-mask-left {
+      background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    }
+    .gradient-mask-right {
+      background: linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-canvas text-ink">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const CATEGORIES = [
+      { id: 'beachfront', name: 'Beachfront', count: '1,420 stays', icon: '🏖️' },
+      { id: 'cabins', name: 'Cabins', count: '980 stays', icon: '🪵' },
+      { id: 'iconic-cities', name: 'Iconic cities', count: '2,110 stays', icon: '🏙️' },
+      { id: 'countryside', name: 'Countryside', count: '850 stays', icon: '🌾' },
+      { id: 'lakefront', name: 'Lakefront', count: '640 stays', icon: '⛵' },
+      { id: 'amazing-views', name: 'Amazing views', count: '1,890 stays', icon: '🌄' },
+      { id: 'tiny-homes', name: 'Tiny homes', count: '410 stays', icon: '🏡' },
+      { id: 'mansions', name: 'Mansions', count: '320 stays', icon: '🏰' },
+      { id: 'treehouses', name: 'Treehouses', count: '180 stays', icon: '🌳' },
+      { id: 'castles', name: 'Castles', count: '95 stays', icon: '🛡️' },
+      { id: 'camping', name: 'Camping', count: '520 stays', icon: '⛺' },
+      { id: 'skiing', name: 'Ski-in/out', count: '760 stays', icon: '⛷️' },
+      { id: 'luxe', name: 'Luxe', count: '290 stays', icon: '💎' },
+      { id: 'design', name: 'Design', count: '610 stays', icon: '🎨' },
+      { id: 'islands', name: 'Islands', count: '230 stays', icon: '🏝️' },
+    ];
+
+    const MOCK_LISTINGS = [
+      {
+        id: '1',
+        title: 'Architectural Cliff Villa with Infinity Pool',
+        location: 'Big Sur, California',
+        distance: '182 miles away',
+        dates: 'Nov 12 – 17',
+        price: 540,
+        rating: 4.98,
+        reviews: 142,
+        image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80',
+        badge: 'Guest favorite',
+      },
+      {
+        id: '2',
+        title: 'Minimalist Cedar Cabin in Redwood Forest',
+        location: 'Mendocino, California',
+        distance: '124 miles away',
+        dates: 'Nov 18 – 23',
+        price: 295,
+        rating: 4.95,
+        reviews: 88,
+        image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800&q=80',
+        badge: 'Guest favorite',
+      },
+      {
+        id: '3',
+        title: 'Modern Desert Pavilion with Panoramic Vistas',
+        location: 'Joshua Tree, California',
+        distance: '210 miles away',
+        dates: 'Dec 1 – 6',
+        price: 380,
+        rating: 4.91,
+        reviews: 204,
+        image: 'https://images.unsplash.com/photo-1542314831-c6a4d2757657?auto=format&fit=crop&w=800&q=80',
+        badge: null,
+      },
+      {
+        id: '4',
+        title: 'Lakefront Nordic Lodge with Private Sauna',
+        location: 'Lake Tahoe, Nevada',
+        distance: '195 miles away',
+        dates: 'Dec 10 – 15',
+        price: 460,
+        rating: 4.99,
+        reviews: 312,
+        image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80',
+        badge: 'Guest favorite',
+      },
+      {
+        id: '5',
+        title: 'Oceanfront Glass House on Pacific Bluffs',
+        location: 'Malibu, California',
+        distance: '240 miles away',
+        dates: 'Dec 18 – 24',
+        price: 720,
+        rating: 4.97,
+        reviews: 175,
+        image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+        badge: 'Guest favorite',
+      },
+      {
+        id: '6',
+        title: 'Historic Stone Millhouse with Vineyard Views',
+        location: 'Sonoma Valley, California',
+        distance: '68 miles away',
+        dates: 'Jan 5 – 10',
+        price: 340,
+        rating: 4.88,
+        reviews: 94,
+        image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80',
+        badge: null,
+      },
+      {
+        id: '7',
+        title: 'Secluded Mountain A-Frame Retreat',
+        location: 'Mount Hood, Oregon',
+        distance: '512 miles away',
+        dates: 'Jan 14 – 19',
+        price: 260,
+        rating: 4.93,
+        reviews: 118,
+        image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80',
+        badge: 'Guest favorite',
+      },
+      {
+        id: '8',
+        title: 'Boutique Farmhouse Loft & Citrus Orchard',
+        location: 'Ojai, California',
+        distance: '145 miles away',
+        dates: 'Jan 22 – 27',
+        price: 310,
+        rating: 4.96,
+        reviews: 160,
+        image: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
+        badge: null,
+      },
+    ];
+
+    const DESTINATION_REGIONS = [
+      { name: "I'm flexible", icon: '🗺️', desc: 'Search any worldwide destination' },
+      { name: 'Europe', icon: '🏰', desc: 'Italy, France, Spain, Greece' },
+      { name: 'United States', icon: '🗽', desc: 'Coast-to-coast stays' },
+      { name: 'Japan', icon: '🏯', desc: 'Tokyo, Kyoto, Hokkaido' },
+      { name: 'Southeast Asia', icon: '🌴', desc: 'Bali, Thailand, Vietnam' },
+      { name: 'Caribbean', icon: '🌊', desc: 'Turks & Caicos, Jamaica' },
+    ];
+
+    // Shared Category Bar Component
+    function CategoryBar({ categories, selectedCategory, onSelectCategory, badgeStyle = 'underline' }) {
+      const scrollRef = useRef(null);
+      const [canScrollLeft, setCanScrollLeft] = useState(false);
+      const [canScrollRight, setCanScrollRight] = useState(true);
+
+      const checkScroll = () => {
+        if (!scrollRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setCanScrollLeft(scrollLeft > 10);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+      };
+
+      useEffect(() => {
+        checkScroll();
+        const el = scrollRef.current;
+        if (el) el.addEventListener('scroll', checkScroll);
+        window.addEventListener('resize', checkScroll);
+        return () => {
+          if (el) el.removeEventListener('scroll', checkScroll);
+          window.removeEventListener('resize', checkScroll);
+        };
+      }, []);
+
+      const scrollBy = (offset) => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+        }
+      };
+
+      return (
+        <div className="relative border-b border-hairline-soft bg-canvas px-6 md:px-12 flex items-center h-20 select-none">
+          {/* Left Arrow */}
+          {canScrollLeft && (
+            <div className="absolute left-6 z-10 flex items-center pr-4">
+              <div className="gradient-mask-left absolute -left-6 top-0 bottom-0 w-16 pointer-events-none" />
+              <button
+                onClick={() => scrollBy(-280)}
+                aria-label="Previous categories"
+                className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-canvas shadow-sm hover:scale-105 hover:shadow-md transition"
+              >
+                <svg className="h-3 w-3 stroke-ink" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Categories Slider */}
+          <div
+            ref={scrollRef}
+            className="flex w-full items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth py-2"
+          >
+            {categories.map((cat) => {
+              const isSelected = selectedCategory === cat.name;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => onSelectCategory(cat.name)}
+                  className={`group flex flex-col items-center gap-2 whitespace-nowrap transition relative pb-2 pt-1 min-w-[56px] focus:outline-none ${
+                    badgeStyle === 'pill'
+                      ? isSelected
+                        ? 'bg-ink text-canvas px-4 py-2 rounded-full font-semibold'
+                        : 'bg-surface-soft hover:bg-surface-strong text-secondary hover:text-ink px-4 py-2 rounded-full font-medium'
+                      : isSelected
+                      ? 'text-ink font-semibold'
+                      : 'text-secondary hover:text-ink hover:opacity-100 font-medium'
+                  }`}
+                >
+                  <span className="text-2xl transition group-hover:scale-110">{cat.icon}</span>
+                  <span className="text-xs tracking-tight">{cat.name}</span>
+                  {badgeStyle === 'underline' && isSelected && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-ink rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right Arrow & Filter Button */}
+          <div className="flex items-center pl-4">
+            {canScrollRight && (
+              <div className="relative flex items-center mr-3">
+                <div className="gradient-mask-right absolute -right-4 top-0 bottom-0 w-16 pointer-events-none" />
+                <button
+                  onClick={() => scrollBy(280)}
+                  aria-label="Next categories"
+                  className="relative z-10 flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-canvas shadow-sm hover:scale-105 hover:shadow-md transition"
+                >
+                  <svg className="h-3 w-3 stroke-ink" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
+            <button
+              className="hidden lg:flex items-center gap-2 rounded-xl border border-hairline px-4 py-2.5 text-xs font-semibold hover:border-ink transition ml-2"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+              </svg>
+              <span>Filters</span>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // Mock Listing Grid
+    function ListingGrid({ listings, onToggleFavorite, favorites }) {
+      return (
+        <main className="max-w-[1680px] mx-auto px-6 md:px-12 py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+            {listings.map((item) => {
+              const isFav = favorites.includes(item.id);
+              return (
+                <article key={item.id} className="group cursor-pointer">
+                  <div className="relative aspect-square w-full overflow-hidden rounded-[20px] bg-neutral-100 shadow-airbnb-rest group-hover:shadow-airbnb-hover transition-all duration-300">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="h-full w-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {item.badge && (
+                      <div className="absolute top-3 left-3 rounded-full bg-white/90 backdrop-blur-md px-3 py-1 text-xs font-semibold text-ink shadow-sm">
+                        {item.badge}
+                      </div>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleFavorite(item.id);
+                      }}
+                      aria-label="Add to wishlist"
+                      className="absolute top-3 right-3 p-2 rounded-full hover:scale-110 active:scale-95 transition focus:outline-none"
+                    >
+                      <svg
+                        className={`h-6 w-6 stroke-white stroke-2 drop-shadow-md ${
+                          isFav ? 'fill-rausch stroke-rausch' : 'fill-black/30'
+                        }`}
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="mt-3 flex justify-between items-start text-sm">
+                    <h3 className="font-semibold text-ink truncate max-w-[210px]">{item.location}</h3>
+                    <div className="flex items-center gap-1 shrink-0 font-medium text-ink">
+                      <span>★</span>
+                      <span>{item.rating}</span>
+                    </div>
+                  </div>
+                  <p className="text-secondary text-sm mt-0.5">{item.distance}</p>
+                  <p className="text-secondary text-sm">{item.dates}</p>
+                  <div className="mt-2 text-sm">
+                    <span className="font-bold text-ink">${item.price}</span>
+                    <span className="text-body-ink"> night</span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </main>
+      );
+    }
+
+    // VARIANT A: Canonical Inline Header Expansion (Airbnb Web Standard)
+    function VariantA({ state, setState }) {
+      const [isExpanded, setIsExpanded] = useState(false);
+      const [activeTab, setActiveTab] = useState('stays');
+      const [activeSegment, setActiveSegment] = useState('where'); // 'where', 'checkIn', 'checkOut', 'who'
+      const headerRef = useRef(null);
+
+      // Click outside to collapse
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (headerRef.current && !headerRef.current.contains(e.target)) {
+            setIsExpanded(false);
+          }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }, []);
+
+      const totalGuests = state.guests.adults + state.guests.children + state.guests.infants + state.guests.pets;
+
+      return (
+        <header ref={headerRef} className="sticky top-0 z-40 bg-canvas transition-all duration-300">
+          {/* Top Navbar */}
+          <div className={`px-6 md:px-12 border-b border-hairline-soft transition-all duration-300 ${isExpanded ? 'pb-5 pt-4' : 'h-20 flex items-center'}`}>
+            <div className="flex items-center justify-between w-full">
+              {/* Brand Logo */}
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => setIsExpanded(false)}>
+                <svg className="h-8 w-8 fill-rausch" viewBox="0 0 32 32">
+                  <path d="M16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.116 12.553 7.1 14.865 1.458 3.447.886 6.837-1.468 9.215-2.227 2.251-5.419 3.126-8.916 2.626-3.497.5-6.689-.375-8.916-2.626-2.354-2.378-2.926-5.768-1.468-9.215.984-2.312 5.146-11.035 7.1-14.865l.533-1.025C12.537 1.963 13.992 1 16 1zm0 2c-1.396 0-2.375.642-3.454 2.569l-.53 1.021C10.088 10.428 5.955 19.1 5.01 21.328c-1.127 2.665-.67 5.182 1.085 6.953 1.761 1.777 4.382 2.476 7.395 2.012 1.034-.16 2.008-.432 2.51-.776.502.344 1.476.616 2.51.776 3.013.464 5.634-.235 7.395-2.012 1.755-1.771 2.212-4.288 1.085-6.953-.945-2.228-5.078-10.9-7.006-14.738l-.53-1.021C18.375 3.642 17.396 3 16 3zm0 15c2.209 0 4 1.791 4 4 0 1.408-.727 2.646-1.826 3.364C17.484 25.819 16.77 26 16 26s-1.484-.181-2.174-.636C12.727 24.646 12 23.408 12 22c0-2.209 1.791-4 4-4z" />
+                </svg>
+                <span className="text-xl font-bold tracking-tight text-rausch">motel</span>
+              </div>
+
+              {/* Middle Section: Collapsed 3-Segment Pill vs Stays/Experiences Tab Switcher */}
+              {!isExpanded ? (
+                <div className="flex items-center rounded-full border border-hairline bg-canvas p-1.5 shadow-airbnb-rest hover:shadow-airbnb-hover transition-all select-none">
+                  {/* Segment 1: WHERE */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('where');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'where' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Where
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[130px]">
+                      {state.destination || "I'm flexible"}
+                    </div>
+                  </div>
+
+                  <div className="h-6 w-px bg-hairline" />
+
+                  {/* Segment 2: DATES */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('dates');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'dates' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Dates
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[140px]">
+                      {state.checkIn ? `${state.checkIn} – ${state.checkOut || 'Nov 18'}` : 'Nov 14 – Nov 18'}
+                    </div>
+                  </div>
+
+                  <div className="h-6 w-px bg-hairline" />
+
+                  {/* Segment 3: GUESTS */}
+                  <div
+                    onClick={() => {
+                      setIsExpanded(true);
+                      setActiveSegment('who');
+                    }}
+                    className={`cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'who' && isExpanded
+                        ? 'border-2 border-black bg-white px-5 py-2 shadow-sm'
+                        : 'px-5 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      Guests
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate max-w-[110px]">
+                      {totalGuests > 0 ? `${totalGuests} guests` : '7 guests'}
+                    </div>
+                  </div>
+
+                  {/* Search Orb */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(true);
+                      setActiveSegment('where');
+                    }}
+                    aria-label="Search"
+                    className="h-9 w-9 rounded-full bg-rausch hover:bg-deep-rausch text-canvas flex items-center justify-center shrink-0 shadow-md ml-1 transition active:scale-95"
+                  >
+                    <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-6">
+                  <button
+                    onClick={() => setActiveTab('stays')}
+                    className={`text-base pb-1 transition relative ${activeTab === 'stays' ? 'text-ink font-semibold' : 'text-secondary hover:text-ink'}`}
+                  >
+                    Stays
+                    {activeTab === 'stays' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-ink" />}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('experiences')}
+                    className={`text-base pb-1 transition relative ${activeTab === 'experiences' ? 'text-ink font-semibold' : 'text-secondary hover:text-ink'}`}
+                  >
+                    Experiences
+                    {activeTab === 'experiences' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-ink" />}
+                  </button>
+                </div>
+              )}
+
+              {/* Right Side: Host CTA & Profile */}
+              <div className="flex items-center gap-2">
+                <button className="hidden md:block rounded-full px-4 py-2.5 text-sm font-semibold hover:bg-surface-soft transition">
+                  Become a host
+                </button>
+                <button className="rounded-full p-2.5 hover:bg-surface-soft transition">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8" />
+                  </svg>
+                </button>
+                <div className="flex items-center gap-3 rounded-full border border-hairline p-1.5 pl-3.5 shadow-sm hover:shadow-md transition cursor-pointer">
+                  <svg className="h-4 w-4 stroke-ink" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                  </svg>
+                  <div className="h-7 w-7 rounded-full bg-secondary/30 flex items-center justify-center text-xs font-bold text-white">
+                    P
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Expanded 3-Segment Search Bar (from Image #1 / Variant C) */}
+            {isExpanded && (
+              <div className="mt-4 flex justify-center">
+                <div className="relative flex items-center rounded-full border border-hairline bg-canvas p-1.5 shadow-airbnb-hover hover:shadow-airbnb-expanded transition-all max-w-2xl w-full">
+                  {/* Segment 1: WHERE */}
+                  <div
+                    onClick={() => setActiveSegment('where')}
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'where'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Where
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {state.destination || "I'm flexible"}
+                    </div>
+                  </div>
+
+                  {/* Divider 1 */}
+                  {activeSegment !== 'where' && activeSegment !== 'dates' && (
+                    <div className="h-6 w-px bg-hairline" />
+                  )}
+
+                  {/* Segment 2: DATES */}
+                  <div
+                    onClick={() => setActiveSegment('dates')}
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'dates'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Dates
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {state.checkIn ? `${state.checkIn} – ${state.checkOut || 'Nov 18'}` : 'Nov 14 – Nov 18'}
+                    </div>
+                  </div>
+
+                  {/* Divider 2 */}
+                  {activeSegment !== 'dates' && activeSegment !== 'who' && (
+                    <div className="h-6 w-px bg-hairline" />
+                  )}
+
+                  {/* Segment 3: GUESTS */}
+                  <div
+                    onClick={() => setActiveSegment('who')}
+                    className={`flex-1 cursor-pointer rounded-full transition-all text-left ${
+                      activeSegment === 'who'
+                        ? 'border-2 border-black bg-white px-6 py-2 shadow-sm'
+                        : 'px-6 py-2 hover:bg-neutral-100/70'
+                    }`}
+                  >
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-ink">
+                      Guests
+                    </div>
+                    <div className="text-xs font-semibold text-ink truncate">
+                      {totalGuests > 0 ? `${totalGuests} guests` : '7 guests'}
+                    </div>
+                  </div>
+
+                  {/* Search Orb CTA */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(false);
+                    }}
+                    aria-label="Search"
+                    className="h-10 w-10 md:h-11 md:w-11 rounded-full bg-rausch hover:bg-deep-rausch text-canvas flex items-center justify-center shrink-0 shadow-md ml-2 transition active:scale-95"
+                  >
+                    <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                  </button>
+
+                  {/* Popover Dropdown Panels */}
+                  {activeSegment === 'where' && (
+                    <div className="absolute top-20 left-0 w-96 rounded-[32px] border border-hairline bg-canvas p-6 shadow-airbnb-dialog z-50">
+                      <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-3">
+                        Destination
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Search destinations"
+                        value={state.destination}
+                        onChange={(e) => setState((prev) => ({ ...prev, destination: e.target.value }))}
+                        className="w-full rounded-xl border border-hairline px-4 py-2.5 text-sm text-ink mb-4 focus:border-ink focus:outline-none"
+                      />
+                      <div className="text-xs font-bold uppercase tracking-wider text-secondary mb-3">
+                        Search by region
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {DESTINATION_REGIONS.map((region) => (
+                          <div
+                            key={region.name}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setState((prev) => ({ ...prev, destination: region.name }));
+                              setActiveSegment('dates');
+                            }}
+                            className="cursor-pointer rounded-2xl border border-hairline p-3 hover:border-ink hover:bg-surface-soft transition"
+                          >
+                            <span className="text-2xl">{region.icon}</span>
+                            <div className="mt-2 text-xs font-bold text-ink">{region.name}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSegment === 'dates' && (
+                    <div className="absolute top-20 left-1/4 w-[480px] rounded-[32px] border border-hairline bg-canvas p-6 shadow-airbnb-dialog z-50">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-sm font-bold text-ink">Select Dates (November 2026)</span>
+                        <span className="text-xs text-secondary">Flexible dates ± 3 days</span>
+                      </div>
+                      <div className="grid grid-cols-7 gap-2 text-center text-xs">
+                        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+                          <div key={d} className="font-semibold text-secondary py-1">{d}</div>
+                        ))}
+                        {Array.from({ length: 30 }, (_, i) => i + 1).map((day) => {
+                          const isStart = state.checkIn === `Nov ${day}`;
+                          const isEnd = state.checkOut === `Nov ${day}`;
+                          return (
+                            <button
+                              key={day}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!state.checkIn || (state.checkIn && state.checkOut)) {
+                                  setState((prev) => ({ ...prev, checkIn: `Nov ${day}`, checkOut: '' }));
+                                } else {
+                                  setState((prev) => ({ ...prev, checkOut: `Nov ${day}` }));
+                                  setActiveSegment('who');
+                                }
+                              }}
+                              className={`h-9 w-9 rounded-full flex items-center justify-center font-medium transition ${
+                                isStart || isEnd
+                                  ? 'bg-ink text-canvas font-bold'
+                                  : 'hover:border hover:border-ink text-ink'
+                              }`}
+                            >
+                              {day}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {activeSegment === 'who' && (
+                    <div className="absolute top-20 right-0 w-96 rounded-[32px] border border-hairline bg-canvas p-6 shadow-airbnb-dialog z-50">
+                      <div className="space-y-4">
+                        {[
+                          { key: 'adults', title: 'Adults', desc: 'Ages 13 or above' },
+                          { key: 'children', title: 'Children', desc: 'Ages 2–12' },
+                          { key: 'infants', title: 'Infants', desc: 'Under 2' },
+                          { key: 'pets', title: 'Pets', desc: 'Bringing a service animal?' },
+                        ].map((row) => (
+                          <div key={row.key} className="flex items-center justify-between border-b border-hairline-soft pb-3">
+                            <div>
+                              <div className="text-sm font-bold text-ink">{row.title}</div>
+                              <div className="text-xs text-secondary">{row.desc}</div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <button
+                                disabled={state.guests[row.key] <= 0}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setState((prev) => ({
+                                    ...prev,
+                                    guests: { ...prev.guests, [row.key]: Math.max(0, prev.guests[row.key] - 1) },
+                                  }));
+                                }}
+                                className="h-8 w-8 rounded-full border border-hairline flex items-center justify-center text-secondary disabled:opacity-30 hover:border-ink transition"
+                              >
+                                –
+                              </button>
+                              <span className="w-4 text-center text-sm font-bold text-ink">
+                                {state.guests[row.key]}
+                              </span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setState((prev) => ({
+                                    ...prev,
+                                    guests: { ...prev.guests, [row.key]: prev.guests[row.key] + 1 },
+                                  }));
+                                }}
+                                className="h-8 w-8 rounded-full border border-hairline flex items-center justify-center text-secondary hover:border-ink transition"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Semi-transparent Dimmed Backdrop when expanded */}
+          {isExpanded && (
+            <div
+              onClick={() => setIsExpanded(false)}
+              className="fixed inset-0 top-36 z-30 bg-black/25 backdrop-blur-[1px] transition-opacity"
+            />
+          )}
+
+          {/* Category Bar */}
+          <CategoryBar
+            categories={CATEGORIES}
+            selectedCategory={state.category}
+            onSelectCategory={(cat) => setState((prev) => ({ ...prev, category: cat }))}
+            badgeStyle="underline"
+          />
+        </header>
+      );
+    }
+
+    // VARIANT B: Modal Dialog / Overlay Flow (Adaptive / Mobile-First Modal)
+    function VariantB({ state, setState }) {
+      const [isOpen, setIsOpen] = useState(false);
+      const [activeStep, setActiveStep] = useState(1); // 1: Where, 2: When, 3: Who
+
+      const totalGuests = state.guests.adults + state.guests.children + state.guests.infants + state.guests.pets;
+
+      return (
+        <header className="sticky top-0 z-40 bg-canvas border-b border-hairline-soft">
+          <div className="px-6 md:px-12 py-3 flex items-center justify-between">
+            {/* Brand Logo */}
+            <div className="flex items-center gap-2 cursor-pointer">
+              <svg className="h-8 w-8 fill-rausch" viewBox="0 0 32 32">
+                <path d="M16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.116 12.553 7.1 14.865 1.458 3.447.886 6.837-1.468 9.215-2.227 2.251-5.419 3.126-8.916 2.626-3.497.5-6.689-.375-8.916-2.626-2.354-2.378-2.926-5.768-1.468-9.215.984-2.312 5.146-11.035 7.1-14.865l.533-1.025C12.537 1.963 13.992 1 16 1z" />
+              </svg>
+              <span className="text-xl font-bold tracking-tight text-rausch">motel</span>
+            </div>
+
+            {/* Centered Search Card / Pill */}
+            <div
+              onClick={() => setIsOpen(true)}
+              className="flex items-center gap-4 rounded-full border border-hairline bg-canvas px-5 py-2.5 shadow-airbnb-rest hover:shadow-airbnb-hover transition cursor-pointer max-w-lg w-full mx-6"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-rausch text-canvas shrink-0">
+                <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="text-xs font-bold text-ink">Where to?</div>
+                <div className="text-xs text-secondary truncate">
+                  {state.destination || 'Anywhere'} · {state.checkIn || 'Any week'} · {totalGuests > 0 ? `${totalGuests} guests` : 'Add guests'}
+                </div>
+              </div>
+              <div className="rounded-full border border-hairline p-2 text-ink">
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Profile Avatar */}
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-secondary/30 flex items-center justify-center text-sm font-bold text-white">
+                P
+              </div>
+            </div>
+          </div>
+
+          {/* Category Bar with Filled Solid Chips */}
+          <CategoryBar
+            categories={CATEGORIES}
+            selectedCategory={state.category}
+            onSelectCategory={(cat) => setState((prev) => ({ ...prev, category: cat }))}
+            badgeStyle="pill"
+          />
+
+          {/* Radix-style Full Dialog Modal Overlay */}
+          {isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="relative w-full max-w-2xl rounded-[32px] bg-canvas p-8 shadow-airbnb-dialog border border-hairline overflow-hidden"
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between border-b border-hairline-soft pb-4">
+                  <h2 className="text-xl font-bold text-ink">Plan your stay</h2>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Close dialog"
+                    className="h-8 w-8 rounded-full border border-hairline flex items-center justify-center text-ink hover:bg-surface-soft transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Collapsible Accordion Flow */}
+                <div className="mt-6 space-y-4">
+                  {/* Step 1: Where */}
+                  <div className="rounded-2xl border border-hairline p-5 transition bg-canvas">
+                    <div
+                      onClick={() => setActiveStep(1)}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <div>
+                        <div className="text-xs font-bold uppercase tracking-wider text-secondary">Step 1</div>
+                        <div className="text-base font-bold text-ink">Where to?</div>
+                      </div>
+                      <span className="text-sm font-semibold text-rausch">{state.destination || 'Add destination'}</span>
+                    </div>
+
+                    {activeStep === 1 && (
+                      <div className="mt-4 pt-4 border-t border-hairline-soft">
+                        <input
+                          type="text"
+                          placeholder="Search countries, cities or regions"
+                          value={state.destination}
+                          onChange={(e) => setState((prev) => ({ ...prev, destination: e.target.value }))}
+                          className="w-full rounded-xl border border-hairline px-4 py-3 text-sm focus:border-ink focus:outline-none"
+                        />
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          {DESTINATION_REGIONS.slice(0, 6).map((reg) => (
+                            <button
+                              key={reg.name}
+                              onClick={() => {
+                                setState((prev) => ({ ...prev, destination: reg.name }));
+                                setActiveStep(2);
+                              }}
+                              className="rounded-xl border border-hairline p-2 text-center hover:border-ink hover:bg-surface-soft transition text-xs font-semibold"
+                            >
+                              <div className="text-lg">{reg.icon}</div>
+                              <div className="mt-1">{reg.name}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Step 2: When */}
+                  <div className="rounded-2xl border border-hairline p-5 transition bg-canvas">
+                    <div
+                      onClick={() => setActiveStep(2)}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <div>
+                        <div className="text-xs font-bold uppercase tracking-wider text-secondary">Step 2</div>
+                        <div className="text-base font-bold text-ink">When is your stay?</div>
+                      </div>
+                      <span className="text-sm font-semibold text-rausch">
+                        {state.checkIn ? `${state.checkIn} – ${state.checkOut || ''}` : 'Add dates'}
+                      </span>
+                    </div>
+
+                    {activeStep === 2 && (
+                      <div className="mt-4 pt-4 border-t border-hairline-soft">
+                        <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                          {Array.from({ length: 14 }, (_, i) => i + 10).map((d) => (
+                            <button
+                              key={d}
+                              onClick={() => {
+                                setState((prev) => ({ ...prev, checkIn: `Nov ${d}`, checkOut: `Nov ${d + 4}` }));
+                                setActiveStep(3);
+                              }}
+                              className="rounded-lg border border-hairline p-2 hover:bg-ink hover:text-white transition font-medium"
+                            >
+                              Nov {d}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Step 3: Who */}
+                  <div className="rounded-2xl border border-hairline p-5 transition bg-canvas">
+                    <div
+                      onClick={() => setActiveStep(3)}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <div>
+                        <div className="text-xs font-bold uppercase tracking-wider text-secondary">Step 3</div>
+                        <div className="text-base font-bold text-ink">Who's coming?</div>
+                      </div>
+                      <span className="text-sm font-semibold text-rausch">
+                        {totalGuests > 0 ? `${totalGuests} guests` : 'Add guests'}
+                      </span>
+                    </div>
+
+                    {activeStep === 3 && (
+                      <div className="mt-4 pt-4 border-t border-hairline-soft flex items-center justify-between">
+                        <span className="text-sm font-medium text-ink">Adults (ages 13+)</span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            disabled={state.guests.adults <= 1}
+                            onClick={() => setState((p) => ({ ...p, guests: { ...p.guests, adults: p.guests.adults - 1 } }))}
+                            className="h-8 w-8 rounded-full border border-hairline flex items-center justify-center font-bold"
+                          >
+                            –
+                          </button>
+                          <span className="font-bold">{state.guests.adults}</span>
+                          <button
+                            onClick={() => setState((p) => ({ ...p, guests: { ...p.guests, adults: p.guests.adults + 1 } }))}
+                            className="h-8 w-8 rounded-full border border-hairline flex items-center justify-center font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="mt-8 flex items-center justify-between border-t border-hairline-soft pt-4">
+                  <button
+                    onClick={() => setState((prev) => ({ ...prev, destination: '', checkIn: '', checkOut: '', guests: { adults: 1, children: 0, infants: 0, pets: 0 } }))}
+                    className="text-sm font-semibold text-ink underline"
+                  >
+                    Clear all
+                  </button>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="rounded-xl bg-rausch px-6 py-3 text-sm font-semibold text-canvas hover:bg-deep-rausch transition"
+                  >
+                    Search listings
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </header>
+      );
+    }
+
+    // VARIANT C: Detached Floating Island Dock with Segment Popovers (Zero Layout Shift)
+    function VariantC({ state, setState }) {
+      const [openPopover, setOpenPopover] = useState(null); // 'where', 'dates', 'guests'
+      const popoverRef = useRef(null);
+
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+            setOpenPopover(null);
+          }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+      }, []);
+
+      const totalGuests = state.guests.adults + state.guests.children + state.guests.infants + state.guests.pets;
+
+      return (
+        <div className="relative">
+          {/* Minimal Top Brand Bar */}
+          <nav className="px-6 md:px-12 h-16 flex items-center justify-between bg-canvas border-b border-hairline-soft">
+            <div className="flex items-center gap-2">
+              <svg className="h-7 w-7 fill-rausch" viewBox="0 0 32 32">
+                <path d="M16 1c2.008 0 3.463.963 4.751 3.269l.533 1.025c1.954 3.83 6.116 12.553 7.1 14.865 1.458 3.447.886 6.837-1.468 9.215-2.227 2.251-5.419 3.126-8.916 2.626-3.497.5-6.689-.375-8.916-2.626-2.354-2.378-2.926-5.768-1.468-9.215.984-2.312 5.146-11.035 7.1-14.865l.533-1.025C12.537 1.963 13.992 1 16 1z" />
+              </svg>
+              <span className="text-lg font-bold tracking-tight text-rausch">motel</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs font-semibold text-secondary">
+              <span>Zero-CLS Segment Popovers</span>
+              <div className="h-8 w-8 rounded-full bg-secondary/30 text-canvas flex items-center justify-center font-bold">
+                P
+              </div>
+            </div>
+          </nav>
+
+          {/* Floating Dock Floating Search Pill */}
+          <div ref={popoverRef} className="sticky top-4 z-40 flex justify-center px-4 my-2">
+            <div className="relative flex items-center rounded-full border border-hairline bg-canvas/95 backdrop-blur-md px-3 py-2 shadow-airbnb-hover hover:shadow-airbnb-expanded transition max-w-xl w-full">
+              {/* Segment 1: Where */}
+              <button
+                onClick={() => setOpenPopover(openPopover === 'where' ? null : 'where')}
+                className={`flex-1 rounded-full px-4 py-1.5 text-left transition ${openPopover === 'where' ? 'bg-surface-strong' : 'hover:bg-surface-soft'}`}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">Where</div>
+                <div className="text-xs font-semibold text-ink truncate">{state.destination || 'Anywhere'}</div>
+              </button>
+
+              <div className="h-6 w-px bg-hairline" />
+
+              {/* Segment 2: Dates */}
+              <button
+                onClick={() => setOpenPopover(openPopover === 'dates' ? null : 'dates')}
+                className={`flex-1 rounded-full px-4 py-1.5 text-left transition ${openPopover === 'dates' ? 'bg-surface-strong' : 'hover:bg-surface-soft'}`}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">Dates</div>
+                <div className="text-xs font-semibold text-ink truncate">
+                  {state.checkIn ? `${state.checkIn} – ${state.checkOut || ''}` : 'Anytime'}
+                </div>
+              </button>
+
+              <div className="h-6 w-px bg-hairline" />
+
+              {/* Segment 3: Guests */}
+              <button
+                onClick={() => setOpenPopover(openPopover === 'guests' ? null : 'guests')}
+                className={`flex-1 rounded-full px-4 py-1.5 text-left transition ${openPopover === 'guests' ? 'bg-surface-strong' : 'hover:bg-surface-soft'}`}
+              >
+                <div className="text-[10px] font-bold uppercase tracking-wider text-secondary">Guests</div>
+                <div className="text-xs font-semibold text-ink truncate">
+                  {totalGuests > 0 ? `${totalGuests} guests` : 'Add guests'}
+                </div>
+              </button>
+
+              {/* Instant Search Orb */}
+              <button
+                onClick={() => setOpenPopover(null)}
+                className="h-9 w-9 rounded-full bg-rausch text-canvas flex items-center justify-center shrink-0 hover:bg-deep-rausch transition"
+              >
+                <svg className="h-4 w-4 stroke-canvas" fill="none" viewBox="0 0 24 24" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </button>
+
+              {/* Independent Popover Anchors */}
+              {openPopover === 'where' && (
+                <div className="absolute top-16 left-0 w-80 rounded-2xl border border-hairline bg-canvas p-4 shadow-airbnb-dialog z-50">
+                  <div className="text-xs font-bold text-ink mb-2">Popular Destinations</div>
+                  <div className="space-y-1">
+                    {DESTINATION_REGIONS.map((r) => (
+                      <div
+                        key={r.name}
+                        onClick={() => {
+                          setState((prev) => ({ ...prev, destination: r.name }));
+                          setOpenPopover(null);
+                        }}
+                        className="flex items-center gap-3 rounded-xl p-2 hover:bg-surface-soft cursor-pointer text-xs font-medium text-ink"
+                      >
+                        <span className="text-lg">{r.icon}</span>
+                        <div>
+                          <div className="font-bold">{r.name}</div>
+                          <div className="text-[10px] text-secondary">{r.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {openPopover === 'dates' && (
+                <div className="absolute top-16 left-1/4 w-72 rounded-2xl border border-hairline bg-canvas p-4 shadow-airbnb-dialog z-50">
+                  <div className="text-xs font-bold text-ink mb-2">Quick Date Selector</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {['This Weekend', 'Next Weekend', 'Any 1 Week', 'Any 1 Month'].map((period) => (
+                      <button
+                        key={period}
+                        onClick={() => {
+                          setState((prev) => ({ ...prev, checkIn: period, checkOut: '' }));
+                          setOpenPopover(null);
+                        }}
+                        className="rounded-lg border border-hairline p-2 text-left hover:border-ink font-semibold"
+                      >
+                        {period}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {openPopover === 'guests' && (
+                <div className="absolute top-16 right-0 w-72 rounded-2xl border border-hairline bg-canvas p-4 shadow-airbnb-dialog z-50">
+                  <div className="text-xs font-bold text-ink mb-3">Guests Count</div>
+                  <div className="flex items-center justify-between py-2 border-b border-hairline-soft">
+                    <span className="text-xs font-bold">Adults</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        disabled={state.guests.adults <= 1}
+                        onClick={() => setState((p) => ({ ...p, guests: { ...p.guests, adults: p.guests.adults - 1 } }))}
+                        className="h-7 w-7 rounded-full border border-hairline text-xs font-bold"
+                      >
+                        –
+                      </button>
+                      <span className="text-xs font-bold">{state.guests.adults}</span>
+                      <button
+                        onClick={() => setState((p) => ({ ...p, guests: { ...p.guests, adults: p.guests.adults + 1 } }))}
+                        className="h-7 w-7 rounded-full border border-hairline text-xs font-bold"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Floating Category Strip */}
+          <CategoryBar
+            categories={CATEGORIES}
+            selectedCategory={state.category}
+            onSelectCategory={(cat) => setState((prev) => ({ ...prev, category: cat }))}
+            badgeStyle="underline"
+          />
+
+          {/* Floating Map Toggle Pill at Bottom Center */}
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-30">
+            <button className="flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-bold text-canvas shadow-airbnb-dialog hover:scale-105 transition">
+              <span>Show map</span>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934a1.12 1.12 0 01-1.006 0L9.503 3.38a1.12 1.12 0 00-1.006 0L3.622 5.817A1.125 1.125 0 003 6.824v12.355c0 .836.88 1.38 1.628 1.006l3.869-1.934a1.12 1.12 0 011.006 0l4.994 2.497a1.12 1.12 0 001.006 0z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // FLOATING PROTOTYPE SWITCHER (as specified in UI.md)
+    function PrototypeSwitcher({ variants, current, onChange }) {
+      const currentIndex = variants.findIndex((v) => v.key === current);
+
+      const cycle = (direction) => {
+        const nextIndex = (currentIndex + direction + variants.length) % variants.length;
+        onChange(variants[nextIndex].key);
+      };
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+          if (['input', 'textarea'].includes(activeTag) || document.activeElement.isContentEditable) {
+            return;
+          }
+          if (e.key === 'ArrowLeft') cycle(-1);
+          if (e.key === 'ArrowRight') cycle(1);
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [currentIndex]);
+
+      const currentVariant = variants[currentIndex] || variants[0];
+
+      return (
+        <aside
+          aria-label="Prototype Variant Switcher"
+          className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 rounded-full bg-ink/90 backdrop-blur-md px-3 py-2 text-canvas shadow-2xl border border-white/20 select-none text-xs"
+        >
+          {/* Left Arrow */}
+          <button
+            onClick={() => cycle(-1)}
+            aria-label="Previous Variant"
+            className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition active:scale-95"
+          >
+            ←
+          </button>
+
+          {/* Variant Label */}
+          <div className="px-2 font-mono font-medium flex items-center gap-2">
+            <span className="font-bold text-rausch">Variant {currentVariant.key}:</span>
+            <span className="text-white/90">{currentVariant.name}</span>
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => cycle(1)}
+            aria-label="Next Variant"
+            className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-white/20 transition active:scale-95"
+          >
+            →
+          </button>
+        </aside>
+      );
+    }
+
+    // LIVE STATE INSPECTOR PANEL
+    function StateInspector({ state, variant }) {
+      const [isOpen, setIsOpen] = useState(false);
+
+      return (
+        <div className="fixed bottom-4 right-4 z-50">
+          {!isOpen ? (
+            <button
+              onClick={() => setIsOpen(true)}
+              className="rounded-full bg-neutral-900 text-canvas px-3.5 py-1.5 text-xs font-mono font-semibold shadow-lg hover:bg-neutral-800 transition border border-neutral-700"
+            >
+              {`{ } State`}
+            </button>
+          ) : (
+            <div className="w-80 rounded-2xl bg-neutral-900 text-canvas p-4 shadow-2xl border border-neutral-700 text-xs font-mono">
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-800 mb-2">
+                <span className="font-bold text-rausch">Live Filter State</span>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="text-neutral-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+              <pre className="text-[11px] text-emerald-400 overflow-x-auto">
+                {JSON.stringify({ variant, ...state }, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // MAIN ROOT PROTOTYPE APPLICATION
+    function App() {
+      const VARIANTS = [
+        { key: 'A', name: 'Canonical Header with 3-Segment Stacked Pill (Winner)' },
+        { key: 'B', name: 'Overlay Dialog Modal Flow' },
+        { key: 'C', name: 'Detached Dock & Segment Popovers' },
+      ];
+
+      const getInitialVariant = () => {
+        const params = new URLSearchParams(window.location.search);
+        const v = params.get('variant');
+        return ['A', 'B', 'C'].includes(v) ? v : 'A';
+      };
+
+      const [currentVariant, setCurrentVariant] = useState(getInitialVariant);
+
+      const [searchState, setSearchState] = useState({
+        destination: "I'm flexible",
+        checkIn: 'Nov 14',
+        checkOut: 'Nov 18',
+        guests: { adults: 4, children: 3, infants: 0, pets: 0 },
+        category: 'Beachfront',
+      });
+
+      const [favorites, setFavorites] = useState(['1', '4']);
+
+      const handleToggleFavorite = (id) => {
+        setFavorites((prev) =>
+          prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+        );
+      };
+
+      const handleVariantChange = (key) => {
+        setCurrentVariant(key);
+        const url = new URL(window.location);
+        url.searchParams.set('variant', key);
+        window.history.pushState({}, '', url);
+      };
+
+      useEffect(() => {
+        const handlePopState = () => {
+          setCurrentVariant(getInitialVariant());
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+      }, []);
+
+      return (
+        <div className="min-h-screen bg-canvas pb-24">
+          {/* Mount Variant */}
+          {currentVariant === 'A' && (
+            <VariantA state={searchState} setState={setSearchState} />
+          )}
+          {currentVariant === 'B' && (
+            <VariantB state={searchState} setState={setSearchState} />
+          )}
+          {currentVariant === 'C' && (
+            <VariantC state={searchState} setState={setSearchState} />
+          )}
+
+          {/* Real density content */}
+          <ListingGrid
+            listings={MOCK_LISTINGS}
+            onToggleFavorite={handleToggleFavorite}
+            favorites={favorites}
+          />
+
+          {/* Floating Switcher */}
+          <PrototypeSwitcher
+            variants={VARIANTS}
+            current={currentVariant}
+            onChange={handleVariantChange}
+          />
+
+          {/* State Inspector */}
+          <StateInspector state={searchState} variant={currentVariant} />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

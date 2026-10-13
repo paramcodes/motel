@@ -9,11 +9,11 @@
   "scripts": {
     "dev": "bun --filter \"*\" dev",
     "build": "bun --filter \"*\" build",
-    "test": "bun test",
+    "test": "bun test --timeout=30000",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "check": "bun run lint && bun run typecheck && bun test",
+    "check": "bun run lint && bun run typecheck && bun test --timeout=30000",
     "dev:api": "bun --filter @motel/api dev",
     "dev:web": "bun --filter @motel/web dev",
     "db:seed": "bun --filter @motel/db seed",

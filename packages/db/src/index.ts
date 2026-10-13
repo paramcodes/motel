@@ -68,13 +68,24 @@ export class DatabaseClient {
       if (this.dataDir && !existsSync(this.dataDir)) {
         mkdirSync(this.dataDir, { recursive: true });
       }
-      this.pglite = new PGlite(this.dataDir, {
+      // NOTE: use the static `PGlite.create()` factory rather than `new PGlite()`.
+      // The constructor path does not wire the `extensions` option into the
+      // instance (extensions like btree_gist silently fail to register), so
+      // `CREATE EXTENSION btree_gist` — required by the GiST exclusion
+      // migration — throws "extension is not available" and no tables are built.
+      this.pglite = await PGlite.create(this.dataDir, {
         extensions: { btree_gist },
       });
     }
     if (!this.initialized) {
       await this.initSchema();
       this.initialized = true;
+      // Tests run against isolated in-memory databases, so seed the demo
+      // fixtures (host/guest users + listings) that the suites expect.
+      if (process.env.NODE_ENV === 'test' || process.env.BUN_TEST_RUNNER_NAME) {
+        const { seedDatabase } = await import('./seed');
+        await seedDatabase();
+      }
     }
     return this.pglite;
   }

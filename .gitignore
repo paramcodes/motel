@@ -5,3 +5,8 @@ node_modules/
 dist/
 *.tsbuildinfo
 *.mp4
+# Keep the recorded demo assets in version control for the README.
+!docs/demo/*.mp4
+!docs/demo/*.gif
+# Raw Playwright captures are intermediate artifacts.
+docs/demo/.raw/

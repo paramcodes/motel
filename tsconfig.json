@@ -4,6 +4,6 @@
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["packages/**/*", "apps/**/*"],
-  "exclude": ["node_modules", "dist", ".next"]
+  "include": ["packages/**/*", "apps/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", ".next", "**/*.test.ts"]
 }

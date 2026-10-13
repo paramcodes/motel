@@ -18,4 +18,8 @@
 
 ## Concurrency & Testing Invariant
 - PostgreSQL GiST exclusion constraints (`23P01` / `isReservationExclusionViolation`) enforce double-booking prevention.
+
+## Embedded Database Note (PGlite — Not External PostgreSQL)
+- There is no external `postgresql` server; `packages/db` uses `@electric-sql/pglite` embedded in-process. Do NOT run `docker ps`, `systemctl`, `sudo`, `pacman`, `pg_isready`, or `initdb` commands.
+- Tests default to isolated in-memory PGlite (`dataDir: undefined`) to eliminate file-lock contention on `.scratch/db`; set `DATABASE_DIR` only when persistent test data is required.
 - Unit and integration tests run against PGlite with isolated listings/dates.

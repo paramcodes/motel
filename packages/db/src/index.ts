@@ -443,7 +443,9 @@ export class DatabaseClient {
   };
 }
 
-function getDatabaseDirectory(): string {
+function getDatabaseDirectory(): string | undefined {
+  // Avoid disk lock contention: run all tests against an isolated in-memory database.
+  if (process.env.NODE_ENV === 'test' || process.env.BUN_TEST_RUNNER_NAME) return undefined;
   if (process.env.DATABASE_DIR) return process.env.DATABASE_DIR;
   let root = process.cwd();
   while (root !== '/' && !existsSync(join(root, 'packages/db'))) {
